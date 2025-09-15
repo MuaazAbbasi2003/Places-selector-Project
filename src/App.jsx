@@ -7,10 +7,18 @@ import DeleteConfirmation from "./components/DeleteConfirmation.jsx";
 import logoImg from "./assets/logo.png";
 import { sortPlacesByDistance } from "./loc.js";
 
+// ✅ Safe parsing to avoid "undefined" JSON error
+const rawStored = localStorage.getItem("sortedPlaces");
+const storedIds =
+  rawStored && rawStored !== "undefined" ? JSON.parse(rawStored) : [];
+const storedPlaces = storedIds
+  .map((id) => AVAILABLE_PLACES.find((place) => place.id === id))
+  .filter(Boolean);
+
 function App() {
   const modal = useRef();
   const selectedPlace = useRef();
-  const [pickedPlaces, setPickedPlaces] = useState([]);
+  const [pickedPlaces, setPickedPlaces] = useState(storedPlaces);
   const [place, setPlace] = useState([]);
 
   function handleStartRemovePlace(id) {
@@ -41,6 +49,15 @@ function App() {
       const place = AVAILABLE_PLACES.find((place) => place.id === id);
       return [place, ...prevPickedPlaces];
     });
+
+    const rawStored = localStorage.getItem("sortedPlaces");
+    const sortedPlacesin =
+      rawStored && rawStored !== "undefined" ? JSON.parse(rawStored) : [];
+
+    if (!sortedPlacesin.includes(id)) {
+      const updatedPlaces = [...sortedPlacesin, id];
+      localStorage.setItem("sortedPlaces", JSON.stringify(updatedPlaces));
+    }
   }
 
   function handleRemovePlace() {
@@ -48,6 +65,17 @@ function App() {
       prevPickedPlaces.filter((place) => place.id !== selectedPlace.current)
     );
     modal.current.close();
+
+    const rawStored = localStorage.getItem("sortedPlaces");
+    const sortedPlacesin =
+      rawStored && rawStored !== "undefined" ? JSON.parse(rawStored) : [];
+
+    localStorage.setItem(
+      "sortedPlaces",
+      JSON.stringify(
+        sortedPlacesin.filter((id) => id !== selectedPlace.current)
+      )
+    );
   }
 
   return (
@@ -70,7 +98,7 @@ function App() {
       <main>
         <Places
           title="I'd like to visit ..."
-          fallbackText={"Select the places you would like to visit below."}
+          fallbackText="Select the places you would like to visit below."
           places={pickedPlaces}
           onSelectPlace={handleStartRemovePlace}
         />
