@@ -7,7 +7,6 @@ import DeleteConfirmation from "./components/DeleteConfirmation.jsx";
 import logoImg from "./assets/logo.png";
 import { sortPlacesByDistance } from "./loc.js";
 
-// ✅ Safe parsing to avoid "undefined" JSON error
 const rawStored = localStorage.getItem("sortedPlaces");
 const storedIds =
   rawStored && rawStored !== "undefined" ? JSON.parse(rawStored) : [];
@@ -20,14 +19,17 @@ function App() {
   const selectedPlace = useRef();
   const [pickedPlaces, setPickedPlaces] = useState(storedPlaces);
   const [place, setPlace] = useState([]);
+  const [smodal, setsModal] = useState(false);
 
   function handleStartRemovePlace(id) {
-    modal.current.open();
+    // modal.current.open();
+    setsModal(true);
     selectedPlace.current = id;
   }
 
   function handleStopRemovePlace() {
-    modal.current.close();
+    // modal.current.close();
+    setsModal(false);
   }
 
   useEffect(() => {
@@ -64,7 +66,7 @@ function App() {
     setPickedPlaces((prevPickedPlaces) =>
       prevPickedPlaces.filter((place) => place.id !== selectedPlace.current)
     );
-    modal.current.close();
+    setsModal(false);
 
     const rawStored = localStorage.getItem("sortedPlaces");
     const sortedPlacesin =
@@ -80,7 +82,13 @@ function App() {
 
   return (
     <>
-      <Modal ref={modal}>
+      <Modal
+        ref={modal}
+        opentheModal={smodal}
+        onClose={() => {
+          setsModal(false);
+        }}
+      >
         <DeleteConfirmation
           onCancel={handleStopRemovePlace}
           onConfirm={handleRemovePlace}
